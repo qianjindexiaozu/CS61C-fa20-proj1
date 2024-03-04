@@ -8,10 +8,10 @@
 **              Copyright (C) Dan Garcia, 2020. All rights reserved.
 **              Justin Yokota - Starter Code
 **				YOUR NAME HERE
-**
+**				Andy Wang
 **
 ** DATE:        2020-08-15
-**
+**				2024-03-04
 **************************************************************************/
 
 #include <stdio.h>
@@ -26,16 +26,128 @@
 Image *readData(char *filename) 
 {
 	//YOUR CODE HERE
+	FILE *fp = fopen(filename, "r");
+	if(!fp){
+		printf("open file error\n");
+		return NULL;
+	}
+	char buff[20];
+	fscanf(fp, "%s", buff);
+	if(strcmp(buff, "P3")){
+		printf("this is not a P3 file\n");
+		fclose(fp);
+		return NULL;
+	}
+	Image *img = (Image *)malloc(sizeof(Image));
+	fscanf(fp, "%u %u", &img->cols, &img->rows);
+	int scale;
+	fscanf(fp, "%u", &scale);
+	int totpixels = img->rows * img->cols;
+	img->image = (Color**)malloc(sizeof(Color*) * totpixels);
+	for (int i = 0; i < totpixels; i++) {
+		*(img->image + i) = (Color*)malloc(sizeof(Color));
+		Color* pixel = *(img->image + i);
+		fscanf(fp, "%hhu %hhu %hhu", &pixel->R, &pixel->G, &pixel->B);
+	}
+	fclose(fp);
+	return img;
 }
 
 //Given an image, prints to stdout (e.g. with printf) a .ppm P3 file with the image's data.
 void writeData(Image *image)
 {
-	//YOUR CODE HERE
+	//YOUR CODE HERE	
+	printf("P3\n%u %u\n255\n", image->cols, image->rows);
+	// for(int i = 0; i < image->rows; i++){
+	// 	for(int j = 0; j < image->cols - 1; j++){
+	// 		printf("%hhu %hhu %hhu   ", image->image[i][j].R, image->image[i][j].G, image->image[i][j].B);
+	// 	}
+	// 	printf("%hhu %hhu %hhu\n", image->image[i][image->cols - 1].R, image->image[i][image->cols - 1].G, image->image[i][image->cols - 1].B);
+	// }
+	Color** p = image->image;
+	for (int i = 0; i < image->rows; i++) {
+		for (int j = 0; j < image->cols - 1; j++) {
+			printf("%3hhu %3hhu %3hhu   ", (*p)->R, (*p)->G, (*p)->B);
+			p++;
+		}
+		printf("%3hhu %3hhu %3hhu\n", (*p)->R, (*p)->G, (*p)->B);
+		p++;
+	}
+	
 }
 
 //Frees an image
 void freeImage(Image *image)
 {
 	//YOUR CODE HERE
+	int maxRange = image->cols * image->rows;
+	for(int i = 0; i < maxRange; i++){
+		free (*(image->image + i));
+	}
+	free (image->image);
+	free (image);
+
 }
+
+// Image *readData(char *filename) 
+// {
+// 	//YOUR CODE HERE
+// 	FILE* imagefile = fopen(filename, "r");
+// 	if (imagefile == NULL) {
+// 		printf("fail to open %s.\n", filename);
+// 		return NULL;
+// 	}
+// 	Image *img = (Image*) malloc(sizeof(Image));
+// 	char format[3];
+// 	int maxcolor;
+// 	fscanf(imagefile, "%s", format);
+// 	if (format[0] != 'P' || format[1] != '3') {
+// 		printf("wrong ppm format\n");
+// 		return NULL;
+// 	}
+// 	fscanf(imagefile, "%u", &img->cols);
+// 	fscanf(imagefile, "%u", &img->rows);
+// 	fscanf(imagefile, "%u", &maxcolor);
+// 	if (img->cols < 0 || img->rows < 0 || maxcolor != 255) {
+// 		printf("wrong ppm format\n");
+// 		return NULL;
+// 	}
+// 	int totpixels = img->rows * img->cols;
+// 	img->image = (Color**)malloc(sizeof(Color*) * totpixels);
+// 	for (int i = 0; i < totpixels; i++) {
+// 		*(img->image + i) = (Color*)malloc(sizeof(Color));
+// 		Color* pixel = *(img->image + i);
+// 		fscanf(imagefile, "%hhu %hhu %hhu", &pixel->R, &pixel->G, &pixel->B);
+// 	}
+// 	fclose(imagefile);
+// 	return img;
+// }
+
+// //Given an image, prints to stdout (e.g. with printf) a .ppm P3 file with the image's data.
+// void writeData(Image *image)
+// {
+// 	//YOUR CODE HERE
+// 	printf("P3\n%d %d\n255\n", image->cols, image->rows);
+// 	Color** p = image->image;
+// 	for (int i = 0; i < image->rows; i++) {
+// 		for (int j = 0; j < image->cols - 1; j++) {
+// 			printf("%3hhu %3hhu %3hhu   ", (*p)->R, (*p)->G, (*p)->B);
+// 			p++;
+// 		}
+// 		printf("%3hhu %3hhu %3hhu\n", (*p)->R, (*p)->G, (*p)->B);
+// 		p++;
+// 	}
+
+// }
+
+// //Frees an image
+// void freeImage(Image *image)
+// {
+// 	//YOUR CODE HERE
+// 	int totpixels = image->rows * image->cols;
+// 	for (int i = 0; i < totpixels; i++) {
+// 		free(*(image->image + i));
+// 	}
+// 	free(image->image);
+// 	free(image);
+// }
